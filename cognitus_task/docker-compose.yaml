@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  db:
+      image: postgres
+      environment:
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: admin
+        POSTGRES_DB: cog-task-db
+        PGDATA: /data/postgres
+      volumes:
+        - postgrdata3:/data/postgres
+      ports:
+        - "5432:5432"
+      restart: unless-stopped
+
+
+  web:
+    #image: django
+    build:
+      context: ./cognitus_task  
+      dockerfile: myproject/mydjangoapp/Dockerfile  
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"  
+   # volumes:
+    #  - .:/app  
+    environment:  
+      - DATABASE_URL=postgresql://admin:admin@localhost:5432/cog-task-db
+      #- DATABASE_TEST_URL=postgresql://postgres:password@db:5432/app_test
+      #- BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
+    #links:
+     # redis
+
+
+  algorithm:
+
+  algorithm_celery:
+
+  redis:
+    image: redis
+
+volumes:
+    postgrdata3:

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../fastapitest"
+		},
+		{
+			"path": "../../../cog-task-fastapi"
+		}
+	],
+	"settings": {}
+}

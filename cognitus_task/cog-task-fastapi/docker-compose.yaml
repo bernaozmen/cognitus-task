@@ -1,0 +1,86 @@
+version: '3.4'
+
+services:
+  fastapi:
+    image: fastapiimage:latest
+    ports:
+      - 8075:8075
+    environment:
+      PORT: 8075
+      REDIS_URL: fastapi_redis
+      DATABASE_NAME: cog-task-db
+      DATABASE_USER: admin
+      DATABASE_PASSWORD: admin
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_ENGINE: django.db.backends.postgresql_psycopg2
+    depends_on:
+      - postgres
+    volumes:
+       - fastapi1:/data/fastapi
+       
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: cog-task-db
+      PGDATA: /data/postgres
+    volumes:
+       - postgrdata3:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+        - pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5052}:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+  
+  minio:
+    image: minio/minio
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+
+  fastapi_redis:
+    image: redis
+
+  fastapi_celery:
+    image: fastapiimage:latest
+    entrypoint: /app/docker-celery-entrypoint.sh
+    environment:
+      REDIS_URL: fastapi_redis
+      DATABASE_NAME: cog-task-db
+      DATABASE_USER: admin
+      DATABASE_PASSWORD: admin
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_ENGINE: django.db.backends.postgresql_psycopg2
+    healthcheck:
+      disable: true
+
+volumes:
+    postgrdata3:
+    pgadmin:
+    minio-data:
+    fastapi1:
